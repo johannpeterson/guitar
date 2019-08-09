@@ -1,0 +1,48 @@
+% For printing blank chord sheets to fill in by hand.
+\documentclass[11pt, oneside]{article}
+\usepackage{geometry}
+\geometry{
+    letterpaper,
+    left = 1 in,
+    right = 1 in,
+    top = 1 in,
+    bottom = 1 in
+} 
+% http://mirror.las.iastate.edu/tex-archive/macros/latex/contrib/guitarchordschemes/guitarchordschemes_en.pdf
+\usepackage{guitarchordschemes}
+\setchordscheme{
+	ringing-style = {circle, thin, fill=white}
+}
+\usepackage{subfig}
+\usepackage{fancyhdr}
+\def \chordScale {0.22}
+\def \rowLength {4}
+\def \colLength {7}
+\begin{document}
+\pagestyle{fancy}
+\fancyhf{}
+\chead{Guitar Chords}
+\begin{figure}%
+\centering
+\newcount\row
+\row=\colLength
+\loop
+    {\newcount\column
+    \column=\rowLength
+    \loop
+        \subfloat {
+            \resizebox {\chordScale \textwidth} {!} {
+                \chordscheme[
+                ]
+            }
+        }%
+        \advance \column -1
+        \ifnum \column > 0
+    \repeat}%
+    \vspace{5 mm}  
+    \advance \row -1
+    \ifnum \row > 0
+\repeat
+\end{figure}
+\vfill
+\end{document}  
