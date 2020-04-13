@@ -1,0 +1,195 @@
+% A bunch of blank chord templates to fill in.
+\documentclass[11pt, oneside]{article}
+\usepackage{geometry}
+\geometry{
+    letterpaper,
+    left = 1 in,
+    right = 1 in,
+    top = 1 in,
+    bottom = 1 in
+} 
+% http://mirror.las.iastate.edu/tex-archive/macros/latex/contrib/guitarchordschemes/guitarchordschemes_en.pdf
+\usepackage{guitarchordschemes}
+\setchordscheme{
+	ringing-style = {circle, thin, fill=white}
+}
+\usepackage{subfig}
+\usepackage{fancyhdr}
+\title{Guitar Chords - Double Slack F Tuning}
+\author{Johann Peterson}
+\date{}							% Activate to display a given date or no date
+\def \chordScale {0.22}
+\setchordscheme{
+	tuning={C,F,C,E,A,C},
+	chord-frets=6,
+	name-format=\huge
+	}
+\begin{document}
+\pagestyle{fancy}
+\fancyhf{}
+\chead{Guitar Chords - Double Slack F Tuning}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+        \resizebox {\chordScale \textwidth} {!} {
+            \chordscheme[
+            	name=C Major,
+		ring={6,3},
+		finger={3/5, 3/4},
+		mute={1,2}
+            ]
+        }
+    }%
+    \hspace{1 cm}
+    \subfloat {     % 1 column
+        \resizebox {\chordScale \textwidth} {!} {
+            \chordscheme[
+            	name=C\textsuperscript{9},
+		ring={3},
+		finger={2/6, 3/5, 3/4},
+		mute={1,2}
+            ]
+        }
+    }%
+    \hspace{1 cm}
+     \subfloat {     % 1 column
+        \resizebox {\chordScale \textwidth} {!} {
+            \chordscheme[
+            	name=F\textsuperscript{7},
+		ring={3,4,5},
+		finger={5/6},
+		mute={1,2}
+            ]
+        }
+    }%
+\end{figure}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        		name=A Minor,
+		ring={3,4,5},
+		finger={4/6},
+		mute={1,2}
+        ]
+    }
+    }%
+    \hspace{1 cm}
+     \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        		name=G  Major,
+		finger={2/3, 3/4, 2/5, 2/6},
+		mute={1,2}
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        		name=F Major,
+		mute={1},
+		ring={2,3,5,6},
+		finger={1/4}
+        ]
+    }
+    }%
+\end{figure}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        		name=C Major,
+		ring={1,3,4,6},
+		finger={2/2, 3/5}
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+\end{figure}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+\end{figure}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+\end{figure}
+\begin{figure}%         % 1 row
+\centering
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+    \hspace{1 cm}
+    \subfloat {
+    \resizebox {\chordScale \textwidth} {!} {
+        \chordscheme[
+        ]
+    }
+    }%
+\end{figure}
+\end{document}  

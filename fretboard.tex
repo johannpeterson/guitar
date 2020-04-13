@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{tikz}
+
+\def \numstrings {6}
+\def \topstring \pgfmathparse{\num_strings - 1}
+\def \fretoverhang {0.05}
+\def \stringspacing {0.5}
+\def \numfrets {12}
+\def \a {0.943874}
+\def \fretboardwidth {\pgfmathparse{ multiply(\numstrings, \stringspacing) }}
+
+\begin{document}
+
+\begin{tikzpicture}
+
+  \foreach \s in {0,1,...,5} {
+    \pgfmathparse{ multiply(\s, \stringspacing) };
+    \def \y {\pgfmathresult};
+    \draw (0, \y) --  (2, \y);
+  }
+
+\pgfmathparse{ multiply(\numstrings, \stringspacing) };
+\def \fbwidth \pgfmathresult;
+
+  \foreach \s in {0,1,...,\numfrets} {
+    %% \pgfmathparse{pow(\a,\s)};
+    \def \y {\pgfmathparse{pow(\a,\s)} \pgfmathresult};
+    \draw (\y, 0) -- ++(0, 3.5);
+  }
+  
+\end{tikzpicture}
+
+\end{document}
