@@ -11,6 +11,8 @@ The sheets come in two families:
 - **`guitarchordschemes` diagrams:** `chord sheet.tex` (scales), `triads 3x8.tex`, and the `blank chords` and `chords double slack F` files, which print empty chord grids to fill in by hand.
 - **Hand-drawn TikZ fretboards:** `fretboard.tex`, `phin.tex`, `phin_page.tex` and `Segovia.tex`. `phin.tex` draws a 3-string phin with only some frets. `phin.tex`, `phin_page.tex` and `Segovia.tex` hard-code the 12edo fret ratio, and only `fretboard.tex` handles other tunings.
 
+In `Segovia.tex`, each diagram is a call to `\drawfretboard{title}{notes}{roots}`, where notes and roots are comma-separated `string/fret/finger` lists.
+
 The `.nb` files are Mathematica notebooks.
 
 ## Dropbox placeholders
