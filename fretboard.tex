@@ -1,33 +1,121 @@
 \documentclass{article}
+\usepackage[letterpaper, margin=0.5in]{geometry} % leaves a 19.05 x 25.4 cm drawing area
 \usepackage{tikz}
 
-\def \numstrings {6}
-\def \topstring \pgfmathparse{\num_strings - 1}
-\def \fretoverhang {0.05}
-\def \stringspacing {0.5}
-\def \numfrets {12}
-\def \a {0.943874}
-\def \fretboardwidth {\pgfmathparse{ multiply(\numstrings, \stringspacing) }}
+\pagestyle{empty}
+
+% Settings: change these to adapt the fretboard.
+\def \numstrings {7}
+\def \edo {19} % equal divisions of the octave: 12 is standard tuning, 19 is 19edo
+\def \numfrets {\edo} % one octave by default; set a number to draw more or fewer
+\def \tuning {B,E,A,D,G,B,E} % open notes, left to right; one per string. Use $\sharp$ and $\flat$ for accidentals, or commas alone to leave blanks for writing in
+% Optional: every note of the scale, ascending, with one entry per step of \edo. Shown just above each fret; use \def \notenames {} to hide them.
+% Each \tuning note must match an entry here exactly, and blank \tuning entries leave that string unnamed.
+% For 12edo: C,C$\sharp$,D,D$\sharp$,E,F,F$\sharp$,G,G$\sharp$,A,A$\sharp$,B
+\def \notenames {C,C$\sharp$,D$\flat$,D,D$\sharp$,E$\flat$,E,E$\sharp$/F$\flat$,F,F$\sharp$,G$\flat$,G,G$\sharp$,A$\flat$,A,A$\sharp$,B$\flat$,B,B$\sharp$/C$\flat$}
+\def \stringspacing {1} % in cm
+\def \fretoverhang {0.05} % in cm
+\def \boardtitle {\edo\ EDO} % follows \edo automatically; replace with any text
+\def \boardheight {24} % nut to end of strings, in cm; fills the page height below the title and tuning notes
+\def \stringrunout {1} % how far the strings continue past the last fret, in cm
+
+\pgfmathtruncatemacro{\topstring}{\numstrings - 1}
+\pgfmathsetmacro{\fretboardwidth}{\topstring * \stringspacing}
+\pgfmathsetmacro{\fretlength}{\fretboardwidth + 2 * \fretoverhang}
+\pgfmathsetmacro{\stringend}{\boardheight}
+% True nut-to-bridge distance, chosen so the last fret lands \stringrunout above the end of the strings.
+% Uses \fpeval because pgfmath loses accuracy on fractional powers.
+\edef \scalelength {\fpeval{round((\boardheight - \stringrunout) / (1 - 2^(-\numfrets / \edo)), 5)}}
+
+% Helpers for looking up note names by scale step.
+\ExplSyntaxOn
+\clist_new:N \l__fretboard_names_clist
+\int_new:N \l__fretboard_open_int
+\int_new:N \l__fretboard_pos_int
+
+% Load \notenames, and check there is one entry per step of \edo.
+\NewDocumentCommand{\fretboardloadnames}{}{
+  \exp_args:NNV \clist_set:Nn \l__fretboard_names_clist \notenames
+  \clist_if_empty:NF \l__fretboard_names_clist {
+    \int_compare:nNnF { \clist_count:N \l__fretboard_names_clist } = { \edo } {
+      \PackageError{fretboard}{{\string\notenames}~must~have~one~entry~per~step~of~\string\edo}{}
+    }
+  }
+}
+
+% Find a string's open note in \notenames.
+\NewDocumentCommand{\fretboardfindopen}{m}{
+  \int_set:Nn \l__fretboard_open_int { -1 }
+  \int_zero:N \l__fretboard_pos_int
+  \clist_map_inline:Nn \l__fretboard_names_clist {
+    \str_if_eq:eeTF {#1} {##1}
+      { \int_set_eq:NN \l__fretboard_open_int \l__fretboard_pos_int \clist_map_break: }
+      { \int_incr:N \l__fretboard_pos_int }
+  }
+  \clist_if_empty:NF \l__fretboard_names_clist {
+    \int_compare:nNnT { \l__fretboard_open_int } < { 0 } {
+      \str_if_eq:eeF {#1} {} {
+        \PackageError{fretboard}{Tuning~note~`#1'~does~not~exactly~match~an~entry~in~\string\notenames}{}
+      }
+    }
+  }
+}
+
+% Run the argument only if the string's open note was found.
+\NewDocumentCommand{\fretboardifopenfound}{m}{
+  \int_compare:nNnF { \l__fretboard_open_int } < { 0 } {#1}
+}
+
+% The name of the note at a fret, wrapping around at the octave.
+\NewExpandableDocumentCommand{\fretboardnoteat}{m}{
+  \clist_item:Nn \l__fretboard_names_clist
+    { \int_mod:nn { \l__fretboard_open_int + #1 } { \edo } + 1 }
+}
+\ExplSyntaxOff
+
+% Rotated so the nut is at the top: x runs down the page, along the strings.
+\newcommand{\fretboard}{%
+\fretboardloadnames
+\begin{tikzpicture}[rotate=-90]
+
+  % Only the playable part is drawn: strings stop \stringrunout past the last fret.
+  \foreach \s in {0,1,...,\topstring} {
+    \pgfmathsetmacro{\y}{\s * \stringspacing}
+    \draw (0, \y) -- (\stringend, \y);
+  }
+
+  % Open tuning notes, above the nut. The fixed text height keeps them aligned and reserves the space even when blank.
+  \foreach \note [count=\i from 0] in \tuning {
+    \pgfmathsetmacro{\y}{\i * \stringspacing}
+    \node[anchor=south, inner sep=0pt, text height=0.35cm, text depth=0pt] at (-0.15, \y) {\large\note};
+
+    % Note names, on the string just above each fret. The white fill keeps the string from striking through them.
+    \fretboardfindopen{\note}
+    \fretboardifopenfound{%
+      \foreach \f in {1,...,\numfrets} {
+        \edef \x {\fpeval{round(\scalelength * (1 - 2^(-\f / \edo)), 5)}}
+        \node[anchor=south, fill=white, inner sep=1pt, text height=0.2cm, text depth=0.05cm] at (\x - 0.02, \y) {\scriptsize\fretboardnoteat{\f}};
+      }%
+    }
+  }
+
+  % Nut, at x = 0.
+  \draw[line width=1.6pt] (0, -\fretoverhang) -- ++(0, \fretlength);
+
+  \foreach \s in {1,...,\numfrets} {
+    \edef \x {\fpeval{round(\scalelength * (1 - 2^(-\s / \edo)), 5)}}
+    \draw (\x, -\fretoverhang) -- ++(0, \fretlength);
+  }
+
+\end{tikzpicture}%
+}
 
 \begin{document}
 
-\begin{tikzpicture}
+{\centering\large\boardtitle\par}
+\vspace{0.3cm}
 
-  \foreach \s in {0,1,...,5} {
-    \pgfmathparse{ multiply(\s, \stringspacing) };
-    \def \y {\pgfmathresult};
-    \draw (0, \y) --  (2, \y);
-  }
-
-\pgfmathparse{ multiply(\numstrings, \stringspacing) };
-\def \fbwidth \pgfmathresult;
-
-  \foreach \s in {0,1,...,\numfrets} {
-    %% \pgfmathparse{pow(\a,\s)};
-    \def \y {\pgfmathparse{pow(\a,\s)} \pgfmathresult};
-    \draw (\y, 0) -- ++(0, 3.5);
-  }
-  
-\end{tikzpicture}
+% Two fretboards, with equal gaps at the margins and between them.
+\noindent\hspace*{\fill}\fretboard\hfill\fretboard\hspace*{\fill}
 
 \end{document}

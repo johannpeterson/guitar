@@ -3,5 +3,8 @@
 *.synctex
 *.gz
 *.zip
+*.fls
+*.fdb_latexmk
+*.dvi
 .DS_Store
 
