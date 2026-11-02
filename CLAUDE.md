@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-LaTeX sources for printable guitar reference sheets. There is no application code, test suite or linter. Each `.tex` file is a standalone document that builds its own PDF, with no shared preamble or includes. PDFs are tracked in git, so rebuild and commit the PDF along with its source.
+LaTeX sources for printable guitar reference sheets. There is no application code, test suite or linter. Each `.tex` file in the top folder is a standalone document that builds its own PDF, with no shared preamble. The only includes are the settings files in `fretboards/`, which `fretboard.tex` loads and which don't build on their own. PDFs are tracked in git, so rebuild and commit the PDF along with its source.
 
 The sheets come in two families:
 
@@ -47,7 +47,7 @@ Notes in `finger` and `root` are written `fret/string:finger`:
 
 ## `fretboard.tex`
 
-Draws a fretboard from scratch in TikZ rather than using `guitarchordschemes`, with the nut at x = 0. The picture is rotated -90 degrees, so x runs down the page and the nut is at the top. The drawing lives in the `\fretboard` macro, and the page places two of them side by side. Set `\numstrings`, `\edo` (equal divisions of the octave), `\numfrets`, `\tuning` (open notes, left to right) and `\boardtitle` (defaults to the `\edo` value) at the top of the file. To give the boards different tunings, redefine `\tuning` before each `\fretboard`.
+Draws a fretboard from scratch in TikZ rather than using `guitarchordschemes`, with the nut at x = 0. The picture is rotated -90 degrees, so x runs down the page and the nut is at the top. The drawing lives in the `\fretboard` macro. Each `\fretboardpage{name}` in the document body loads `fretboards/name.tex` and prints one page with a title and two identical boards side by side. To build one layout as `fretboard 12edo.pdf`, run `pdflatex -interaction=nonstopmode -file-line-error -jobname="fretboard 12edo" '\def\onlyfretboard{12edo}\input{fretboard}'`. To add an instrument or tuning, add a file there and a `\fretboardpage` line; the comment above `\fretboardpage` lists the required and optional settings. Page layout settings such as `\stringspacing` stay in `fretboard.tex` and apply to every page.
 
 `\notenames` is optional: it lists every scale note ascending, one entry per step of `\edo`, and the names are shown just above each fret. Each string's names start from its `\tuning` note, which must match a `\notenames` entry exactly, so `\tuning` and `\notenames` must be spelled the same way. The lookup helpers are written in expl3. Fret `n` sits at `\scalelength * (1 - 2^(-n / \edo))`, and `\scalelength` (cm) is computed so the board always fills `\boardheight`.
 

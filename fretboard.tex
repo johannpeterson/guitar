@@ -4,28 +4,11 @@
 
 \pagestyle{empty}
 
-% Settings: change these to adapt the fretboard.
-\def \numstrings {7}
-\def \edo {19} % equal divisions of the octave: 12 is standard tuning, 19 is 19edo
-\def \numfrets {\edo} % one octave by default; set a number to draw more or fewer
-\def \tuning {B,E,A,D,G,B,E} % open notes, left to right; one per string. Use $\sharp$ and $\flat$ for accidentals, or commas alone to leave blanks for writing in
-% Optional: every note of the scale, ascending, with one entry per step of \edo. Shown just above each fret; use \def \notenames {} to hide them.
-% Each \tuning note must match an entry here exactly, and blank \tuning entries leave that string unnamed.
-% For 12edo: C,C$\sharp$,D,D$\sharp$,E,F,F$\sharp$,G,G$\sharp$,A,A$\sharp$,B
-\def \notenames {C,C$\sharp$,D$\flat$,D,D$\sharp$,E$\flat$,E,E$\sharp$/F$\flat$,F,F$\sharp$,G$\flat$,G,G$\sharp$,A$\flat$,A,A$\sharp$,B$\flat$,B,B$\sharp$/C$\flat$}
+% Page layout, shared by every fretboard. Each instrument's settings are in fretboards/.
 \def \stringspacing {1} % in cm
 \def \fretoverhang {0.05} % in cm
-\def \boardtitle {\edo\ EDO} % follows \edo automatically; replace with any text
 \def \boardheight {24} % nut to end of strings, in cm; fills the page height below the title and tuning notes
 \def \stringrunout {1} % how far the strings continue past the last fret, in cm
-
-\pgfmathtruncatemacro{\topstring}{\numstrings - 1}
-\pgfmathsetmacro{\fretboardwidth}{\topstring * \stringspacing}
-\pgfmathsetmacro{\fretlength}{\fretboardwidth + 2 * \fretoverhang}
-\pgfmathsetmacro{\stringend}{\boardheight}
-% True nut-to-bridge distance, chosen so the last fret lands \stringrunout above the end of the strings.
-% Uses \fpeval because pgfmath loses accuracy on fractional powers.
-\edef \scalelength {\fpeval{round((\boardheight - \stringrunout) / (1 - 2^(-\numfrets / \edo)), 5)}}
 
 % Helpers for looking up note names by scale step.
 \ExplSyntaxOn
@@ -71,6 +54,25 @@
   \clist_item:Nn \l__fretboard_names_clist
     { \int_mod:nn { \l__fretboard_open_int + #1 } { \edo } + 1 }
 }
+
+% Report any required setting that a file in fretboards/ left out, naming the file and the setting.
+\bool_new:N \l__fretboard_complete_bool
+\NewDocumentCommand{\fretboardcheck}{m}{
+  \bool_set_true:N \l__fretboard_complete_bool
+  \clist_map_inline:nn { numstrings, edo, tuning } {
+    \cs_if_exist:cF {##1} {
+      \bool_set_false:N \l__fretboard_complete_bool
+      \PackageError{fretboard}
+        {fretboards/#1.tex~does~not~set~\c_backslash_str ##1}
+        {Add~\c_backslash_str def~\c_backslash_str ##1~\c_left_brace_str...\c_right_brace_str~to~that~file.~The~page~is~skipped~until~it~is~set.}
+    }
+  }
+}
+
+% Run the argument only if every required setting was found.
+\NewDocumentCommand{\fretboardifcomplete}{+m}{
+  \bool_if:NT \l__fretboard_complete_bool {#1}
+}
 \ExplSyntaxOff
 
 % Rotated so the nut is at the top: x runs down the page, along the strings.
@@ -110,12 +112,54 @@
 \end{tikzpicture}%
 }
 
+% \fretboardpage{name} loads fretboards/name.tex and prints one page from it.
+% The group keeps one file's settings from leaking into the next page.
+%
+% A file in fretboards/ must set:
+%   \numstrings
+%   \edo        equal divisions of the octave
+%   \tuning     open notes, left to right, one per string. Use $\sharp$ and $\flat$ for
+%               accidentals, or commas alone to leave blanks for writing in.
+% and may set:
+%   \boardtitle defaults to the \edo value, as in "19 EDO"
+%   \numfrets   defaults to one octave
+%   \notenames  every note of the scale, ascending, one entry per step of \edo, shown just
+%               above each fret. Each \tuning note must match an entry exactly, and blank
+%               \tuning entries leave that string unnamed. Defaults to no names.
+\newcommand{\fretboardpage}[1]{%
+  \begingroup
+  \def \boardtitle {\edo\ EDO}%
+  \def \numfrets {\edo}%
+  \def \notenames {}%
+  \input{fretboards/#1}%
+  \fretboardcheck{#1}%
+  \fretboardifcomplete{%
+  \pgfmathtruncatemacro{\topstring}{\numstrings - 1}%
+  \pgfmathsetmacro{\fretboardwidth}{\topstring * \stringspacing}%
+  \pgfmathsetmacro{\fretlength}{\fretboardwidth + 2 * \fretoverhang}%
+  \pgfmathsetmacro{\stringend}{\boardheight}%
+  % True nut-to-bridge distance, chosen so the last fret lands \stringrunout above the end of the strings.
+  % Uses \fpeval because pgfmath loses accuracy on fractional powers.
+  \edef \scalelength {\fpeval{round((\boardheight - \stringrunout) / (1 - 2^(-\numfrets / \edo)), 5)}}%
+  {\centering\large\boardtitle\par}%
+  \vspace{0.3cm}%
+  % Two fretboards, with equal gaps at the margins and between them.
+  \noindent\hspace*{\fill}\fretboard\hfill\fretboard\hspace*{\fill}\par
+  }%
+  \endgroup
+  \clearpage
+}
+
 \begin{document}
 
-{\centering\large\boardtitle\par}
-\vspace{0.3cm}
-
-% Two fretboards, with equal gaps at the margins and between them.
-\noindent\hspace*{\fill}\fretboard\hfill\fretboard\hspace*{\fill}
+% To print one layout to its own PDF, define \onlyfretboard from the command line:
+%   pdflatex -interaction=nonstopmode -file-line-error -jobname="fretboard 12edo" '\def\onlyfretboard{12edo}\input{fretboard}'
+\ifdefined\onlyfretboard
+  \fretboardpage{\onlyfretboard}
+\else
+  % One page per line. Add, remove or reorder these to choose what prints.
+  \fretboardpage{19edo}
+  \fretboardpage{12edo}
+\fi
 
 \end{document}
